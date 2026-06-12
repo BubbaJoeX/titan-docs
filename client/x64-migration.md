@@ -146,9 +146,11 @@ ant build_src
 
 ### Client x64 (Windows)
 
+Set `$env:TITAN_ROOT` to your monorepo root (parent of the `client` repo) before running these commands.
+
 ```powershell
 # Step 1: Run the automation script to add x64 to all projects
-cd D:\titan\client
+cd $env:TITAN_ROOT\client
 .\add_x64_platform.ps1
 
 # Step 2: OpenAL Soft (one-time; see "OpenAL Soft x64" under Phase 3)
@@ -161,12 +163,12 @@ cd D:\titan\client
 #   C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\MSBuild\Current\Bin\MSBuild.exe
 $msb = "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\MSBuild\Current\Bin\MSBuild.exe"
 # Full solution (expect Qt 3.3 / header errors on some projects; see Phase 3):
-& $msb "D:\titan\client\src\build\win32\swg.sln" /p:Configuration=Release /p:Platform=x64 /m
+& $msb "$env:TITAN_ROOT\client\src\build\win32\swg.sln" /p:Configuration=Release /p:Platform=x64 /m
 # Or build SwgTitan only *after* dependencies exist under client\src\compile\x64\...:
-& $msb "D:\titan\client\src\game\client\application\SwgClient\build\win32\SwgClient.vcxproj" /p:Configuration=Release /p:Platform=x64
+& $msb "$env:TITAN_ROOT\client\src\game\client\application\SwgClient\build\win32\SwgClient.vcxproj" /p:Configuration=Release /p:Platform=x64
 
 # After a successful link, stage a full x64 game folder (exe + DLLs + dpvs + OpenAL + sndfile):
-#   cd D:\titan\client
+#   cd $env:TITAN_ROOT\client
 #   .\bundle_win64_release.ps1 -Verbose
 # Output: <titan root>\exe\win64_rel\
 ```
@@ -370,7 +372,7 @@ All engine inline assembly converted to intrinsics/builtins with `#ifdef _M_X64`
 | ------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Deploy folder**                     | `**exe\win64_rel\`** is the x64 layout (parallel to **`exe\win32_rel\`** for 32-bit). **Do not** run the x64 exe from a folder full of **win32** `*_r.dll` or you may get `**0xC000007B`** (invalid image format — usually **x64 exe + 32-bit DLL** in the app directory or a bad `PATH` match).                                                                                                                                                                                                                                                                                                                                                                                 |
 | **Bundle script**                     | `**client\bundle_win64_release.ps1`** — stages `**SwgTitan_r.exe**`, all `compile\x64\**\<Configuration>\*_r.dll`, `**dpvs\<Configuration>\dpvs.dll**`, x64 **OpenAL32.dll** and **sndfile.dll**, optional **SwgGodClient_r.exe**. Params: `**-TitanRoot**`, `**-Configuration**` (Release / Debug / Optimized), `**-IncludeGodClient**`. See script header for examples.                                                                                                                                                                                                                                                                                                        |
-| `**dpvs.dll` in PostBuild**           | The recursive copy `*_r.dll` does **not** include `**dpvs.dll**`. **SwgClient** **Release|x64** PostBuild explicitly copies `**compile\x64\dpvs\$(Configuration)\dpvs.dll**` to the exe output and `**win64_rel**`. (Paths in the vcxproj may be rooted at `**D:\titan\**`; override staging with the bundle script on other drive letters.)                                                                                                                                                                                                                                                                                                                                     |
+| `**dpvs.dll` in PostBuild**           | The recursive copy `*_r.dll` does **not** include `**dpvs.dll**`. **SwgClient** **Release|x64** PostBuild explicitly copies `**compile\x64\dpvs\$(Configuration)\dpvs.dll**` to the exe output and `**win64_rel**`. (Post-build copy paths in some vcxproj files may be machine-specific; use `bundle_win64_release.ps1` or adjust to your `TITAN_ROOT`.)                                                                                                                                                                                                                                                                                                                                     |
 | **Registry (standard user)**          | `**RegistryKey::install**` used `**AF_READ` only** for `**HKEY_LOCAL_MACHINE\Software\Sony Online Entertainment\Default**`, which fails with `**ERROR_ACCESS_DENIED` (5)** on a normal (non-elevated) first run, and **KEY_READ** alone is insufficient to **create** a new subkey. **Fix:** create HKLM with `**KEY_READ                                                                                                                                                                                                                                                                                                                                                        |
 | **Clock / startup stall**             | `**D_game` defaults** set `**clockUsesRecalibrationThread = true`**, which spawns a **Clock** worker during `**SetupSharedFoundation::install`** (before the main window). If startup appears to **hang** after **MemoryBlockManager** logging, **SwgClient** sets `**data.clockUsesRecalibrationThread = false`** so the recalibration thread is off for the game client.                                                                                                                                                                                                                                                                                                       |
 | **Startup tracing**                   | **Unconditional** lines prefixed `**[Titan] startup:`** are emitted with `**OutputDebugStringA**` from `**MemoryBlockManager.cpp**`, `**PersistentCrcString.cpp**`, and `**SetupSharedFoundation.cpp**` (visible in **DebugView** / Visual Studio **Output**). Optional `**[SharedFoundation] logStartupMilestones=1**` uses **ODS only** (not `REPORT_LOG`, which could block or re-enter during early init). **Stall after `RegistryKey`:** the next work is optional milestones, then `**PersistentCrcString::install**` (five `**MemoryBlockManager**` allocations) → `**CrcLowerString::install**` → `**WatchedByList::install**`, then `**Os::install` / `CreateWindow**`. |

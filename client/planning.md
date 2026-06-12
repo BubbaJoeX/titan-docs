@@ -74,7 +74,7 @@ These must be rebuilt/replaced before x64 SwgTitan or SwgGodClient can link:
 | Client pointers | 5 | `StatusWindow.cpp`, `Direct3d9.cpp`, `MemoryManager.cpp`, `Os.cpp`, `PathSearch.cpp` |
 | Client STLport | 4 | `StlForwardDeclaration.h`, `hash_compat.h` (new), `FirstSharedFoundation.h`, `UIStlFwd.h` |
 | Scripts | 2 | `add_x64_platform.ps1`, `cleanup_x64_libs.ps1` |
-| Documentation | 1 | `X64_MIGRATION.md` |
+| Documentation | 1 | `docs/client/x64-migration.md` (titan-docs) |
 
 #### MCP Server Access
 

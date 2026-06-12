@@ -14,36 +14,38 @@ Package: [README.md](README.md) · [overview.md](overview.md) · [quick-referenc
 
 ## Pre-Build Verification
 
+Set `TITAN_ROOT` to your monorepo root (sibling `dsrc`, `src`, `client` repos). Examples below use Windows paths; substitute your root.
+
 ### Step 1: Verify All Files Present
 
 Check that all required files exist:
 
 **Server Scripts:**
 ```bash
-d:\titan\dsrc\sku.0\sys.server\compiled\game\script\library\tangible_dynamics.java
-d:\titan\dsrc\sku.0\sys.server\compiled\game\script\handler\tangible_dynamics_handler.java
-d:\titan\dsrc\sku.0\sys.server\compiled\game\script\test\tangible_dynamics_test.java
+dsrc/sku.0/sys.server/compiled/game/script/library/tangible_dynamics.java
+dsrc/sku.0/sys.server/compiled/game/script/handler/tangible_dynamics_handler.java
+dsrc/sku.0/sys.server/compiled/game/script/test/tangible_dynamics_test.java
 ```
 
 **C++ Implementation:**
 ```bash
-d:\titan\src\engine\shared\library\sharedObject\src\shared\dynamics\TangibleDynamics.h
-d:\titan\src\engine\shared\library\sharedObject\src\shared\dynamics\TangibleDynamics.cpp
-d:\titan\src\engine\shared\library\sharedObject\include\public\sharedObject\TangibleDynamics.h
+src/engine/shared/library/sharedObject/src/shared/dynamics/TangibleDynamics.h
+src/engine/shared/library/sharedObject/src/shared/dynamics/TangibleDynamics.cpp
+src/engine/shared/library/sharedObject/include/public/sharedObject/TangibleDynamics.h
 ```
 
 **Client Implementation:**
 ```bash
-d:\titan\client\src\engine\client\library\clientGame\src\shared\dynamics\ClientTangibleDynamics.h
-d:\titan\client\src\engine\client\library\clientGame\src\shared\dynamics\ClientTangibleDynamics.cpp
+client/src/engine/client/library/clientGame/src/shared/dynamics/ClientTangibleDynamics.h
+client/src/engine/client/library/clientGame/src/shared/dynamics/ClientTangibleDynamics.cpp
 ```
 
 **Documentation:**
 ```bash
-d:\titan\TANGIBLE_DYNAMICS.md
-d:\titan\TANGIBLE_DYNAMICS_IMPLEMENTATION.md
-d:\titan\TANGIBLE_DYNAMICS_QUICK_REFERENCE.md
-d:\titan\IMPLEMENTATION_FILES.md
+packages/tangible-dynamics/overview.md
+packages/tangible-dynamics/quick-reference.md
+packages/tangible-dynamics/files.md
+packages/tangible-dynamics/README.md
 ```
 
 ### Step 2: Verify Modifications
@@ -476,10 +478,10 @@ cmake -DCMAKE_BUILD_TYPE=Release ..
 ## Support & Documentation
 
 For more information, refer to:
-- `TANGIBLE_DYNAMICS.md` - Complete system documentation
-- `TANGIBLE_DYNAMICS_QUICK_REFERENCE.md` - Quick reference guide
-- `TANGIBLE_DYNAMICS_IMPLEMENTATION.md` - Implementation details
-- `IMPLEMENTATION_FILES.md` - Complete file inventory
+- [overview.md](overview.md) — system documentation
+- [quick-reference.md](quick-reference.md) — scripting reference
+- [files.md](files.md) — file inventory
+- [README.md](README.md) — package index
 
 ---
 

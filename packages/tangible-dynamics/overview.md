@@ -3,12 +3,9 @@
 Part of the [TangibleDynamics package](README.md). See also [quick-reference.md](quick-reference.md), [build-and-integration.md](build-and-integration.md), [files.md](files.md).
 
 ## Overview
-TangibleDynamics is a comprehensive physics system for tangible objects in Titan SWG that allows dynamic effects through three independent force channels:
-1. **Push/Shove** - Apply linear velocity in any coordinate space
-2. **Spinning** - Apply angular velocity for rotation
-3. **Breathing** - Pulsating scale animation
+TangibleDynamics applies scripted motion and visual effects to tangible objects. The Java library exposes many composable modes (push, spin, breathing, bounce, hover, orbit, follow, lock-to-parent, conveyor, carousel, mountable rides, easing, …). Effects run server-side with client mirroring via `ClientTangibleDynamics`.
 
-All three can be applied simultaneously or independently, creating rich interactive object behavior.
+**Full method list:** `dsrc/sku.0/sys.server/compiled/game/script/library/tangible_dynamics.java` and [quick-reference.md](quick-reference.md).
 
 ### Architecture
 
@@ -54,42 +51,30 @@ All three can be applied simultaneously or independently, creating rich interact
 - Composition-based design (multiple forces in single dynamics object)
 - Flexible duration system (-1 = infinite, >= 0 = duration in seconds)
 
-### API Reference
+### API reference (summary)
 
-#### Server-Side (tangible_dynamics.java)
+Import `script.library.tangible_dynamics`. Attach `handler.tangible_dynamics_handler` on objects that receive effects.
+
+| Category | Key methods |
+|----------|-------------|
+| Linear | `applyPushForce`, `applyPushForceWithDrag`, `clearPushForce` |
+| Rotation | `applySpinForce`, `clearSpinForce` |
+| Scale | `applyBreathingEffect`, `clearBreathingEffect` |
+| Physics-style | `applyBounceEffect`, `applyWobbleEffect`, `applyShakeEffect`, `applySwayEffect` |
+| Paths | `applyOrbitEffect`, `applyCarouselEffect`, `applyFerrisWheelEffect`, `applyConveyorEffect` |
+| Anchored | `applyHoverEffect`, `applyFloatEffect`, `applyFollowTargetEffect`, `applyLockToParentEffect` |
+| Combined | `applyCombinedForces`, `clearAllForces` |
+| Easing | `setEasing` (`EASE_IN`, `EASE_OUT`, `EASE_IN_OUT`) |
+| Rides | `makeMountable`, `createHoverPlatform`, `createCarouselRide`, `createFerrisWheelSeat` |
+| Shortcuts | `push`, `spin`, `hover`, `levitate`, `carousel`, `orbitSelf`, … |
+
+Coordinate spaces: `SPACE_WORLD`, `SPACE_PARENT`, `SPACE_OBJECT`. Duration `-1` = until cleared.
 
 ```java
-// Apply push/shove force
-tangible_dynamics.applyPushForce(obj_id target, float velocityX, float velocityY, 
-                                 float velocityZ, float duration, int space);
-// space: SPACE_WORLD, SPACE_PARENT, SPACE_OBJECT
-// duration: -1 for infinite
-
-// Apply spin/rotation force
-tangible_dynamics.applySpinForce(obj_id target, float rotYaw, float rotPitch, 
-                                float rotRoll, float duration, boolean aroundCenter);
-// angles in radians per second
-// aroundCenter: true = rotate around appearance sphere center
-
-// Apply breathing/pulsing effect
-tangible_dynamics.applyBreathingEffect(obj_id target, float minScale, float maxScale, 
-                                      float speed, float duration);
-// minScale/maxScale: scale multipliers
-// speed: pulse speed (higher = faster)
-
-// Apply all three forces simultaneously
-tangible_dynamics.applyCombinedForces(obj_id target, float pushX, float pushY, float pushZ,
-                                     float spinYaw, float spinPitch, float spinRoll,
-                                     float breatheMin, float breatheMax, float breatheSpeed,
-                                     float duration);
-
-// Clear individual forces
-tangible_dynamics.clearPushForce(obj_id target);
-tangible_dynamics.clearSpinForce(obj_id target);
-tangible_dynamics.clearBreathingEffect(obj_id target);
-
-// Clear all forces
-tangible_dynamics.clearAllForces(obj_id target);
+// Minimal examples
+tangible_dynamics.applyPushForce(target, 0f, 2f, 0f, 3f, tangible_dynamics.SPACE_WORLD);
+tangible_dynamics.applyLockToParentEffect(target, parent, offX, offY, offZ, 0f, 0f, 0f, true, -1f);
+tangible_dynamics.clearAllForces(target);
 ```
 
 #### C++ API (TangibleDynamics.h / ClientTangibleDynamics.h)
@@ -282,12 +267,9 @@ tangible_dynamics.clearSpinForce(target);
 
 The system is designed for single-threaded game loop execution. All modifications should occur in message handlers or update phases.
 
-### Future Enhancements
+### Future enhancements
 
-Potential Phase 2 features:
-- Velocity/rotation acceleration/deceleration curves
-- Damping factors for velocity decay
-- Hierarchical dynamics (parent-child force propagation)
+Not covered by current docs or still evolving:
 - Client-side prediction for network optimization
-- Effect stacking/composition presets
-- Visual FX triggers on effect application
+- Visual FX hooks on effect start/stop
+- Additional preset combinations beyond ride helpers in `tangible_dynamics.java`

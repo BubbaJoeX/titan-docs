@@ -1,69 +1,70 @@
 # TangibleDynamics
 
-**Version:** 1.0 — Phase 1 complete  
-**Status:** Ready for integration and testing
+Server-driven motion and effects for tangible objects, mirrored on the client for visuals.
 
-Physics for tangible objects: three independent force channels (push, spin, breathing) that can be combined on one object. Implemented across server scripts, shared C++, and client C++.
+**Authority:** `dsrc/sku.0/sys.server/compiled/game/script/library/tangible_dynamics.java`  
+**Handler:** `handler.tangible_dynamics_handler`  
+**Condition:** `CONDITION_MAGIC_TANGIBLE_DYNAMIC` (`0x80000000` in `consts.java`)
 
 ---
 
 ## Read order
 
 1. **This page** — scope and checklist  
-2. [overview.md](overview.md) — architecture, API, examples  
-3. [quick-reference.md](quick-reference.md) — patterns while scripting  
-4. [build-and-integration.md](build-and-integration.md) — build and deploy  
-5. [files.md](files.md) — file locations
+2. [overview.md](overview.md) — architecture and integration  
+3. [quick-reference.md](quick-reference.md) — methods, patterns, troubleshooting  
+4. [build-and-integration.md](build-and-integration.md) — compile and deploy  
+5. [files.md](files.md) — source locations in `dsrc`, `src`, `client`
 
 ---
 
-## What was built
+## Effect families
 
-| Layer | Files |
-|-------|--------|
-| Server scripts | `tangible_dynamics.java`, `tangible_dynamics_handler.java`, `tangible_dynamics_test.java`, `consts.java` (condition flag) |
-| Shared C++ | `TangibleDynamics.h` / `.cpp`, public forwarding header |
-| Client C++ | `ClientTangibleDynamics.h` / `.cpp` |
+| Family | Examples | Java entry points |
+|--------|----------|-------------------|
+| **Linear / spin** | Push (with drag), spin, combined push+spin+breathe | `applyPushForce`, `applySpinForce`, `applyCombinedForces` |
+| **Scale / motion** | Breathing, bounce, wobble, shake, sway | `applyBreathingEffect`, `applyBounceEffect`, `applyWobbleEffect`, … |
+| **Paths** | Orbit, carousel, ferris wheel, conveyor | `applyOrbitEffect`, `applyCarouselEffect`, `applyConveyorEffect` |
+| **Anchored** | Hover, float, follow target, lock to parent | `applyHoverEffect`, `applyFloatEffect`, `applyFollowTargetEffect`, `applyLockToParentEffect` |
+| **Rides** | Mountable platforms, hover platform, carousel seat | `makeMountable`, `createHoverPlatform`, `createCarouselRide` |
+| **Easing** | Ease in/out on force changes | `setEasing` |
 
-**Condition:** `CONDITION_MAGIC_TANGIBLE_DYNAMIC` (`0x80000000`)
-
-**Force channels:**
-
-- **Push** — linear velocity (world / parent / object space)  
-- **Spin** — angular velocity (optional appearance-center pivot)  
-- **Breathing** — min/max scale pulse  
+Shortcuts (`push`, `hover`, `levitate`, `carousel`, …) are defined at the bottom of `tangible_dynamics.java`.
 
 ---
 
-## Quick start (scripting)
+## Quick start
 
 ```java
 import script.library.tangible_dynamics;
 
-// Push upward for 3 seconds
-tangible_dynamics.applyPushForce(target, 0.0f, 2.0f, 0.0f, 3.0f, tangible_dynamics.SPACE_WORLD);
+// Attach handler on the object template or at runtime:
+// handler.tangible_dynamics_handler
 
-// Spin on yaw for 5 seconds
-tangible_dynamics.applySpinForce(target, 3.14f, 0.0f, 0.0f, 5.0f, false);
+tangible_dynamics.applyPushForce(target, 0.0f, 2.0f, 0.0f, 3.0f, tangible_dynamics.SPACE_WORLD);
+tangible_dynamics.applyHoverEffect(target, 1.5f);  // bob at 1.5m
 ```
 
-Attach `handler.tangible_dynamics_handler` on objects that should receive dynamics messages. Test interactively with `tangible_dynamics_test.java`.
+Interactive tests: `dsrc/.../script/test/tangible_dynamics_test.java` and developer tooling in `player_developer.java`.
 
 ---
 
 ## Validation checklist
 
-Before production deploy:
-
-- [ ] All implementation files present (see [files.md](files.md))
-- [ ] `consts.java` defines `CONDITION_MAGIC_TANGIBLE_DYNAMIC`
-- [ ] C++ and Java compile cleanly
-- [ ] Test menu: push, spin, breathe, combined each work
-- [ ] Condition flag sets and clears with effects
-- [ ] No measurable perf regression at expected object counts
+- [ ] Handler attached where effects are used  
+- [ ] `CONDITION_MAGIC_TANGIBLE_DYNAMIC` sets/clears with active effects  
+- [ ] C++ and Java compile in `src` and `dsrc`  
+- [ ] Client `ClientTangibleDynamics` linked in `clientGame`  
+- [ ] Spot-check: push, spin, breathe, hover, lock-to-parent (RT camera follow uses lock-to-parent)  
+- [ ] No perf regression at expected concurrent effect counts  
 
 ---
 
-## Phase 2 (not implemented)
+## Documentation in this package
 
-Velocity easing, damping, hierarchical propagation, client prediction, VFX hooks, preset combinations.
+| File | Role |
+|------|------|
+| [overview.md](overview.md) | Design and integration |
+| [quick-reference.md](quick-reference.md) | API patterns |
+| [build-and-integration.md](build-and-integration.md) | Build steps |
+| [files.md](files.md) | File inventory |

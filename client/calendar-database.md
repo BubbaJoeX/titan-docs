@@ -6,27 +6,27 @@ The calendar system uses Oracle database tables to persist calendar events and s
 ## Files Created/Modified
 
 ### Database Schema Files (for new environments)
-- `D:\titan\src\game\server\database\schema\calendar_events.tab` - Calendar events table definition
-- `D:\titan\src\game\server\database\schema\calendar_settings.tab` - Calendar settings table definition
+- `src/game/server/database\schema\calendar_events.tab` - Calendar events table definition
+- `src/game/server/database\schema\calendar_settings.tab` - Calendar settings table definition
 
 ### Database Update Files (for existing environments)
-- `D:\titan\src\game\server\database\updates\272.sql` - Version 272 update script
-- `D:\titan\src\game\server\database\updates\calendar_system_update.sql` - Standalone update script
+- `src/game/server/database\updates\272.sql` - Version 272 update script
+- `src/game/server/database\updates\calendar_system_update.sql` - Standalone update script
 
 ### Package Files
-- `D:\titan\src\game\server\database\packages\loader.plsqlh` - Added calendar loader function declarations
-- `D:\titan\src\game\server\database\packages\loader.plsql` - Added calendar loader function implementations
-- `D:\titan\src\game\server\database\packages\persister.plsqlh` - Added calendar persister procedure declarations
-- `D:\titan\src\game\server\database\packages\persister.plsql` - Added calendar persister procedure implementations
+- `src/game/server/database\packages\loader.plsqlh` - Added calendar loader function declarations
+- `src/game/server/database\packages\loader.plsql` - Added calendar loader function implementations
+- `src/game/server/database\packages\persister.plsqlh` - Added calendar persister procedure declarations
+- `src/game/server/database\packages\persister.plsql` - Added calendar persister procedure implementations
 
 ### Server Network Messages
-- `D:\titan\src\engine\server\library\serverNetworkMessages\src\shared\gameGameServer\CalendarEventMessage.h`
-- `D:\titan\src\engine\server\library\serverNetworkMessages\src\shared\gameGameServer\CalendarEventMessage.cpp`
-- `D:\titan\src\engine\server\library\serverNetworkMessages\include\public\serverNetworkMessages\CalendarEventMessage.h`
+- `src/engine/server/library\serverNetworkMessages\src\shared\gameGameServer\CalendarEventMessage.h`
+- `src/engine/server/library\serverNetworkMessages\src\shared\gameGameServer\CalendarEventMessage.cpp`
+- `src/engine/server/library\serverNetworkMessages\include\public\serverNetworkMessages\CalendarEventMessage.h`
 
 ### Calendar Service Updates
-- `D:\titan\src\engine\server\library\serverGame\src\shared\calendar\CalendarService.h` - Added database persistence methods
-- `D:\titan\src\engine\server\library\serverGame\src\shared\calendar\CalendarService.cpp` - Implemented database persistence
+- `src/engine/server/library\serverGame\src\shared\calendar\CalendarService.h` - Added database persistence methods
+- `src/engine/server/library\serverGame\src\shared\calendar\CalendarService.cpp` - Implemented database persistence
 
 ---
 

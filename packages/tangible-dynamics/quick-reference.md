@@ -91,6 +91,31 @@ tangible_dynamics.applyCombinedForces(
 
 ---
 
+## Extended effects (beyond push / spin / breathe)
+
+| Effect | Apply | Clear |
+|--------|-------|-------|
+| Bounce | `applyBounceEffect(target, gravity, elasticity, initialUpVelocity, duration)` | `clearBounceEffect` |
+| Wobble | `applyWobbleEffect(target, ampX, ampY, ampZ, freqX, freqY, freqZ, duration)` | `clearWobbleEffect` |
+| Orbit | `applyOrbitEffect(target, cx, cy, cz, radius, radPerSec, duration)` | `clearOrbitEffect` |
+| Hover | `applyHoverEffect(target, height)` or full bob params | `clearHoverEffect` |
+| Follow | `applyFollowTargetEffect(target, followTarget)` or distance/speed variants | `clearFollowTargetEffect` |
+| Lock to parent | `applyLockToParentEffect(...)` / `applyLockToParentEffectAtCurrentPosition` | `clearLockToParentEffect` |
+| Sway | `applySwayEffect(target)` or angle/speed params | `clearSwayEffect` |
+| Shake | `applyShakeEffect(target, duration)` or intensity/frequency | `clearShakeEffect` |
+| Float | `applyFloatEffect(target)` or height param | `clearFloatEffect` |
+| Conveyor | `applyConveyorEffect(target, dirX, dirY, dirZ, speed)` (+ wrap distance) | `clearConveyorEffect` |
+| Carousel | `applyCarouselEffect(target, cx, cy, cz, radius, rotSpeed)` | `clearCarouselEffect` |
+| Easing | `setEasing(target, EASE_IN_OUT, easeDuration)` | — |
+
+**Ride helpers:** `makeMountable`, `createHoverPlatform`, `createCarouselRide`, `createFerrisWheelSeat`.
+
+**Shortcuts** at the bottom of `tangible_dynamics.java`: `push`, `pushUp`, `spin`, `hover`, `follow`, `levitate`, `convey`, `carousel`, `ferrisWheel`, etc.
+
+**RT camera look-at** uses `applyLockToParentEffect` from `player_developer.java` (`spawnRtCameraWithFollowTarget`).
+
+---
+
 ## Cleanup Methods
 
 ### Clear Specific Forces
@@ -283,5 +308,4 @@ Client:            ClientTangibleDynamics (client/src/engine/client/library/clie
 
 ---
 
-**Last Updated**: 2025-03-04
-**Version**: 1.0 - Phase 1 Complete
+**Last updated:** 2026-06-10 — align with `tangible_dynamics.java` in `dsrc`.

@@ -40,7 +40,7 @@ Screen object script that:
 
 #### `RtCameraManager.h/.cpp`
 Central manager for RT camera feeds:
-- Tracks active camera feeds (max 4)
+- Tracks active camera feeds (**max 2** — `MAX_ACTIVE_CAMERAS` in `RtCameraManager.h`)
 - Manages render target textures
 - Handles camera transform updates
 - Renders camera views to textures
@@ -109,8 +109,8 @@ To prevent infinite loops when cameras view screens:
 - `RenderWorld::recursivelyDisableDpvsObjectsForThisRender()` used for exclusion
 
 ### Performance Limits
-- Maximum 4 active cameras
-- Resolution: 256x256 or 512x512
+- Maximum **2** active camera feeds (`RtCameraManager::MAX_ACTIVE_CAMERAS`)
+- Resolution: **128–512** (clamped in C++; UI typically offers 256 or 512 via `rt_screen.java`)
 - Update rate: ~20 FPS (50ms intervals), max 60 FPS
 - Only renders when screen is within 100 meters of player
 - Only renders when screen is visible

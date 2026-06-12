@@ -144,7 +144,7 @@ Controller message types consumed on client include `CM_craftingResult`, `CM_nex
 
 ## 6. Cross-cutting engineering tasks
 
-- **X.1** Update `docs/INDEX.md` with a link to this document (if project index is maintained).
+- **X.1** Link this document from [docs/README.md](https://github.com/BubbaJoeX/titan-docs/blob/main/README.md) when the checklist is complete.
 - **X.2** String tables: new `StringId` entries for errors, planner, factory alerts (location per project convention).
 - **X.3** Config flags: optional `ConfigClientGame` / `ConfigServerGame` toggles for bulk fill and BOM to allow staged rollout.
 - **X.4** Performance: profile inventory scan for “craftable now” / BOM on large inventories; throttle or cache.
