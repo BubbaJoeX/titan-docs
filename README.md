@@ -48,6 +48,9 @@ tools/                             ← launcher and support tooling (see below)
 | [in-game-calendar-plan.md](client/in-game-calendar-plan.md) | In-game calendar plan |
 | [story-companions.md](client/story-companions.md) | Story companion datatables |
 | [developer-commands.md](client/developer-commands.md) | `player_developer.java` commands |
+| [god-client-pen-tablet.md](client/god-client-pen-tablet.md) | God Client pen tablet (Kamvas 13): pressure brushes, eraser, barrel camera |
+| [god-client-productivity.md](client/god-client-productivity.md) | God Client shortcuts: command palette, terrain undo/brush keys, recent templates, transform copy/paste, console input |
+| [god-client-bridge.md](client/god-client-bridge.md) | God Client automation bridge: localhost socket + `godclient_*` MCP tools for offline scene load, selection, placement, transforms, undo, console, camera, screenshots, terrain strokes; Load Scene stall caveat |
 | [interior-structure-creation.md](client/interior-structure-creation.md) | Buildings / POB ships |
 | [maya-pob-from-scratch.md](client/maya-pob-from-scratch.md) | Author a `.pob` in Maya |
 | [maya-kitbash-import-combine.md](client/maya-kitbash-import-combine.md) | Maya kitbash workflow |
@@ -60,6 +63,8 @@ tools/                             ← launcher and support tooling (see below)
 |----------|---------|
 | [atmospheric-flight.md](server/atmospheric-flight.md) | Ground-scene ship flight |
 | [npc-pob-ship.md](server/npc-pob-ship.md) | NPC POB ship controller |
+| [nested-pob-ships.md](server/nested-pob-ships.md) | POB ships parked inside another POB's cell (hangars) |
+| [vessel-fleet.md](server/vessel-fleet.md) | Private boardable ships: Lambda shuttle, Corellian corvette, Nebulon-B (deeds, helm, paint) |
 | [open-face-vendor.md](server/open-face-vendor.md) | Open-face shelf vendor |
 
 ---

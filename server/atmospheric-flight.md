@@ -23,7 +23,8 @@ Related: [atmo-landing-points.md](../client/atmo-landing-points.md) (planet-map 
 13. [DPVS Crash Prevention](#dpvs-crash-prevention)
 14. [Planet Map Integration](#planet-map-integration)
 15. [Native C++ Methods](#native-c-methods)
-16. [File Reference](#file-reference)
+16. [Starport Landing Wells](#starport-landing-wells)
+17. [File Reference](#file-reference)
 
 ---
 
@@ -312,6 +313,93 @@ Exposed to Java scripts via JNI (`ScriptMethodsPilot.cpp`, declared in `base_cla
 
 ---
 
+## Starport Landing Wells
+
+The Titan Atmo Starport (`object/building/titan/titan_atmo_starport.iff`) has a landing well: a 70 m shaft and six levels of hangar bays off it. The bays are underground, in r0 (exterior) space, so ships stay in the world cell. The terrain is cut away over the shaft and every bay.
+
+### Ships over cut-away terrain (C++)
+
+Ships have no footprint, so no floor ever held them. Their only ground was the terrain, and where the terrain is cut away that ground was wrong:
+
+- **Client** (`PlayerShipController::realAlter`, ship ground collision): read a cut-away terrain as height 0, which kept ships out of the well.
+- **Server** (`PlayerShipController` min-altitude clamps): had nothing to stop a ship sinking through a bay floor.
+
+| Change | Where |
+|---|---|
+| `CollisionWorld::findObjectFloorHeightBelow(pos_w, outY)` returns the highest floor of a world-cell building at or below a point (a drop test against the building's r0 floor). | `sharedCollision/CollisionWorld` (server and client copies) |
+| Ship ground = the terrain, or where there is none, that building floor; over neither (the open shaft) nothing holds the ship. The server's two min-altitude clamps use the floor plus 2 m (`getShipMinimumAltitude`), and the client sits the hull on it. A pilot can fly down the shaft and into a bay, but cannot sink through a bay floor or dive through the apron that covers the bays. | `PlayerShipController.cpp` (server and client) |
+| Autopilot descent: `setAutopilotLandingY(y)` makes the descent stop at a set world height (the hover over a well). Without it, a destination with no terrain uses the building floor under the cruise point instead of sea level. | `PlayerShipController.cpp/.h` |
+| `shipSetAutopilotLandingY(ship, y)`; `combat_ship.shipAutoPilotEngage` applies a `landingY` param. | `ScriptMethodsPilot.cpp`, `base_class.java` |
+
+### Traffic control (Java)
+
+`space.atmo.starport_traffic` is one landing point for the whole well, shown as "<point> Docking (N bays free)" on the planet map. `travel.initializeStarport` creates it at the hover over the shaft, for any structure with rows in `datatables/space/titan_starport_bays.tab`.
+
+- **Landing:** **Land Here** charges the docking fee (`starport.traffic.fee`, default 500) and picks the smallest free bay the ship fits, top levels first. Fit uses the hull's length and width from `titan_starport_ships.tab`, measured from each ship's exterior mesh. The YT-2400 berths sideways (`yaw_offset` 90). The yacht, gunship and corvette don't fit and are told to use the pads.
+  - The autopilot flies to a hover 30 m over the rim (`landingY`).
+  - On arrival (`handleShipArrived`) the ship turns onto the bay's heading over the shaft's axis, sinks down the well and backs into the bay (`vessel.wellInPath`). It is then landed (`atmo.landing.landed_at`), and the bay's lounge cell is opened to the owner.
+- **Leaving:** taking the helm (`cmdPilotShip` → `detachShipFromLandingPoint` → `handleShipDeparted`) flies the ship forward out of the bay and up the shaft (`vessel.wellOutPath`). The flight path is then cleared and the pilot has the ship at the hover. The bay is freed and its lounge locked.
+- **Upkeep:** bays held by ships that are gone, or that never arrived within 15 minutes, are freed every minute.
+- **Lounges:** rentable bays' lounges are private while free. The shuttle service's reserved bay (`reserved` = 1) is never let, and its lounge is public.
+
+The shuttle service (`shuttle_service.java`) uses the same `vessel.wellInPath` / `wellOutPath`.
+
+Bay rows come from the Maya build: `starport_ring.bay_table()` is written by `examples/make_atmo_starport.py`. Each row is a bay's clear floor (centre, heading to the shaft, depth, width) and its lounge cell.
+
+**Dev console** (`titan.sh vessel <scene> ...`):
+
+| Command | Does |
+|---|---|
+| `starport <structure oid> <point> [cost]` | Initialize a spawned starport (travel point, shuttle service, traffic control). |
+| `traffic <structure oid>` | Add traffic control to a starport initialized before it existed. |
+| `dock` / `undock <control oid> <ship oid>` | Land a ship in a bay without a pilot (no fee), or fly it out. |
+
+**Coarse terrain chunks are not cut.** `TerrainObject::getHeight` answers from the first renderable chunk. When the camera is far away, or deep down the well, that is a coarse chunk, and only full-detail chunks are cut. So the client could read terrain at 0 over the shaft and throw the ship up to the surface. Both ship clamps therefore let the building floor win whenever a floor lies under a ship that is below the terrain's reading: an r0 floor under ground level only exists where the terrain is cut away.
+
+**Verified on 2026-10-24.**
+
+Local server, using the dev console. Each docked hull was checked inside its bay's walls, centred and clear of the lounge.
+
+| Test | Result |
+|---|---|
+| YT-1300 | medium bay 3 |
+| VT-49 | large bay 2 |
+| YT-2400 | large bay 4, berthed sideways |
+| Yacht | refused (stayed put) |
+| Shuttle bay | stays reserved |
+| Free bays' lounges | private |
+| Undock | flies the ship out to the hover and frees the bay |
+| Shuttle service | its own cycle in bay 1 |
+
+Offline client (`ship_clamp2.py`, `terr_probe3.py` in the session scratchpad), N-1 piloted:
+
+| Position | Result |
+|---|---|
+| Open shaft | stays put at -40 |
+| Just over the shaft pad | rests on it (-161.3) |
+| 0.5 m over a bay floor | rests on it (-31.3) |
+| Mid-air in a bay | stays put |
+| Under the terrain outside | lifted onto it |
+
+`/devtest hop` and `goto` now move a piloted ship through its controller (`PlayerShipController::warpForDevTest`), so the jump sticks. The DevBridge `terrain` command takes `"detail": true, "y": Y` and also returns the full-detail chunk's height and the building floor under each point.
+
+**Live test fixes (2026-10-25, BubbaJoe on the local server):**
+
+- **Auto-flights from the pilot seat.** The pilot's client ignores the server's transform for its own ship, except while the ship is docking. Server autopilots and scripted paths therefore only moved the ship for people in the cabin. In atmospheric flight the server `PlayerShipController` now sets `C_docking` on a ship while its autopilot (before `AP_ARRIVED`) or a flight path drives it, and clears what it set. The pilot's client then follows the server (`PlayerShipController::realAlter`, docking branch) and sends no transforms. In atmospheric flight the client doesn't switch to the docking fly-by camera (`ShipObject` condition change).
+- **Descent speed.** The well paths take about 20 s instead of 37 s (`vessel.WELL_SINK` 9 s, `WELL_BACK` 7 s, `WELL_PAUSE` 1.5 s, `WELL_LIFT` 2.5 s). Traffic control's autopilot climbs 120 m instead of 500 m when the ship starts within 2 km of the well.
+- **Setting people down in a bay.** `vessel.wellSetDownPoint` is used by `vessel.moveOffShip` and `space_transition.disembarkShip`. A ship berthed by traffic control sets people down at its lounge door; the shuttle service's vessel sets them down at the starport's arrival point by the gate lift. The terrain height under a bay is meaningless (it came out at -558).
+- **"You can't see that object"** when boarding a berthed ship: `CreatureObject::canManipulate` aims its line-of-sight ray at the top of the target's bounding sphere, which for a ship in a bay is up through the bay ceiling. Traffic control sets `skipLosCheck` on berthed ships and clears it when they leave.
+- **Ship HUD actions in atmospheric flight.** Atmospheric flight runs the ground HUD, which didn't register the space HUD's ship actions, so `componentDetail`, `hyperspaceMap` and the others were "not found". `SwgCuiHudActionSpace::addShipActions` / `performShipAction` now hold them, and the ground HUD registers them in ship scenes. They cover: autopilot level, booster, target lock, weapon groups, component detail, hyperspace map (now allowed in atmospheric flight), comm with the nearest station, and mining sale.
+
+**Restricted airspace (no-fly zones).** `PlayerShipController::setNoFlyZone(owner, x, z, radius, ceilingY)` / `clearNoFlyZone` (script: `setShipNoFlyZone` / `clearShipNoFlyZone`) keep vertical cylinders per game server, by owner.
+- **Rule:** in atmospheric flight a pilot's move into a zone, or deeper into one (closer to its wall or further under its ceiling), is refused and the ship is put back where it was. The pilot is told to request landing clearance from the planet map, at most every 4 s.
+- **Exempt:** gods, and ships the server flies (autopilot, scripted paths). Arrivals and departures through traffic control and the shuttle service are therefore unaffected. Moves that leave the zone or keep the same depth are allowed, so a ship released at the hover can fly out.
+- **The starport's zone:** traffic control registers a 150 m radius round the shaft, covering the ring, the halls and the yacht pads, up to 150 m over the rim. It is re-registered every minute (a script reload keeps no engine state) and cleared when the control object is destroyed.
+
+Not yet verified (needs a signed-in, non-god player): the pilot path from the planet map (fee, lounge grant to the owner, take-off by taking the helm), and manual flight into the well against the server's clamp.
+
+---
+
 ## File Reference
 
 ### Server Scripts (Java)
@@ -329,6 +417,7 @@ Exposed to Java scripts via JNI (`ScriptMethodsPilot.cpp`, declared in `base_cla
 | `ship_atmospheric_spawner.java`  | AI ship spawner for atmospheric scenes                                                             |
 | `summon_ship.java`               | Ship summon radial script                                                                          |
 | `qatool.java`                    | `/qat spawnAtmoShip` command                                                                       |
+| `starport_traffic.java`          | Landing-well traffic control: bay assignment, well paths, lounge rental                            |
 | `base_class.java`                | Native method declarations                                                                         |
 
 
