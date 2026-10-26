@@ -10,7 +10,29 @@ inside. They join the transport shuttle and SoroSuub yacht built on the same ves
 | Corellian Corvette | `object/ship/player/player_titan_corellian_corvette.iff` | 266 m | Stock bridge, halls and officers' quarters, extended aft: spine and cross halls, lounge, crew quarters, companionway, embarkation room, 29 m ventral ramp |
 | Nebulon-B Frigate | `object/ship/player/player_titan_nebulon_frigate.iff` | 472 m | Embarkation room, a four-landing lift, medical bay, crew deck, bridge hall and a bridge with a four-pane forward viewport |
 
-## Playing with them
+## Player starships (stock JTL path)
+
+The three ships are player POB starships with their own chassis (`player_titan_lambda_shuttle`,
+`player_titan_corellian_corvette`, `player_titan_nebulon_frigate`: rows in `ship_chassis.tab`, `shiptype.tab`,
+`chassis_modifiers.tab`; hit points 9 000 / 60 000 / 90 000, handling tuned for atmospheric flight). They come fitted
+out: `space_crafting.createChassisFromDeed` keeps their `shiptype.tab` components (`titan_*` types).
+
+- **Starship deed** (`object/tangible/ship/crafted/chassis/titan_<name>_deed.iff`): use it to put the ship's control
+  device (`object/intangible/ship/titan_<name>_pcd.iff`) in the datapad.
+- **Datapad → Atmospheric Flight → Launch**: the ship appears 200 m up with the owner in the pilot seat, legs up.
+- **Stations**: pilot seat (`shipcontrol_corvette`, the `ship_pilot_pob` slot) and operations seat in the cockpit /
+  bridge, the starship management terminal, and an escape hatch ("Depart through Boarding Ramp") by the entrance.
+- **Landing on the legs** (the atmospheric autopilot only hovers; these ships set down on their gear):
+  - leave the pilot seat less than 120 m over level, open ground and the ship sets down;
+  - Land Here on the helm console does the same from a hover;
+  - the autopilot (landing pads, planet map) lowers the legs as its descent starts; a summoned ship (Starship Remote)
+    sets down beside its owner with the ramp lowered.
+  The ground check (level under the hull plan, no building, static or other hull on it) is `vessel.padIsClear`.
+- **Taking off**: sit in the pilot seat of a landed ship; it raises the ramp, lifts to a hover, retracts the legs and
+  hands over the controls (`vessel_controller.vesselPilotSeated`). Taking the seat during a scripted landing cancels it.
+- **Datapad → Land Ship** stores it; anyone aboard steps off beside the hull.
+
+## Called with a vessel deed (older path)
 
 - **Deed** (`object/tangible/titan/vessel_deed/titan_<name>_deed.iff`, script `space.vessel.vessel_deed`), from the
   owner's inventory:
@@ -33,7 +55,8 @@ inside. They join the transport shuttle and SoroSuub yacht built on the same ves
 
 | Command | Does |
 |---|---|
-| `deed <deed template> <firstname>` | Puts a deed in a character's inventory |
+| `deed <deed template> <firstname>` | Puts a deed (vessel or starship deed) in a character's inventory |
+| `datapad <firstname>` | Lists a character's datapad: ship control devices and the ship each holds |
 | `paint <ship oid> hull\|trim <index>` | What the colour picker's OK sets |
 | `warp <firstname> <x> <z>` | Moves a test character on the scene |
 | `near <x> <z> <radius>` | Lists vessels and their state |
